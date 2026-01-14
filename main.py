@@ -1,5 +1,6 @@
 import sys
 from urllib.parse import urlparse
+from Operators.FeedOperator import FeedOperator
 """"
 declaring variables
 """
@@ -18,6 +19,13 @@ def main():
         if arg.startswith('-f'):
             feed_url=arg[2:]
     validate_input()
+
+    feed_operator=FeedOperator()
+    feed_details= feed_operator.get_feed_details(feed_url)
+    if len(feed_details)==0:
+        print("No feed details found")
+        sys.exit(1)
+
 
 def validate_input():
      """"
