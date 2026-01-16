@@ -5,3 +5,5 @@
 /.vs
 /.idea
 /.env
+/data
+/Operators/__pycache__

@@ -1,6 +1,7 @@
 import sys
 from urllib.parse import urlparse
 from Operators.FeedOperator import FeedOperator
+from Operators.ChromaOperator import ChromaOperator
 """"
 declaring variables
 """
@@ -20,11 +21,24 @@ def main():
             feed_url=arg[2:]
     validate_input()
 
-    feed_operator=FeedOperator()
-    feed_details= feed_operator.get_feed_details(feed_url)
-    if len(feed_details)==0:
-        print("No feed details found")
-        sys.exit(1)
+    match(operation_type):
+        case 'add':
+            feed_operator=FeedOperator()
+            feed_details = feed_operator.get_feed_details(feed_url)
+            if len(feed_details) == 0:
+                print("No feed details found")
+                sys.exit(1)
+
+            chroma_operator=ChromaOperator()
+            chroma_operator.save_rss_details(feed_details)
+
+        case _:
+            print("Unkown operation")
+    # feed_operator=FeedOperator()
+    # feed_details= feed_operator.get_feed_details(feed_url)
+    # if len(feed_details)==0:
+    #     print("No feed details found")
+    #     sys.exit(1)
 
 
 def validate_input():
@@ -44,6 +58,8 @@ def validate_input():
          if not all([parsed.scheme, parsed.netloc]):
              print("Feed url is not valid")
              sys.exit(1)
+
+
 
 
 if __name__ == '__main__':
