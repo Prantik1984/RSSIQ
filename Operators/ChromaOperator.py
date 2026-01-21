@@ -4,8 +4,8 @@ import chromadb
 from chromadb.utils import embedding_functions
 from typing import List,Dict
 from chromadb.api.models import Collection
-from sympy import false
 import hashlib
+from .WebOperator import WebOperator
 
 class ChromaOperator:
     """"
@@ -38,12 +38,17 @@ class ChromaOperator:
         Adds rss details to the db
         """
         try:
-            text = f"{feed['title']}\n\n{feed['summary']}"
+            article_text = f"{feed['title']}\n\n{feed['summary']}"
             id=self.__create_rss_id(feed)
             metadata = {
                 "link": feed["link"],
-                "downloadcomplete": false
+                "downloadcomplete": "false"
             }
+            ids=[id]
+            docs=[article_text]
+            metas=[metadata]
+
+            vector_collection.add(ids=ids, documents=docs, metadatas=metas)
 
         except Exception as e:
             print(f"Error in adding rss feed to db :-{e}")
@@ -54,3 +59,39 @@ class ChromaOperator:
         """
         unique_str = f"{feed['link']}|{feed.get('published', '')}"
         return hashlib.sha256(unique_str.encode("utf-8")).hexdigest()
+
+    def complete_downloads(self):
+        """"
+        scans the db
+        checks if the any of the articles have not been completely downloaded
+        downloads them
+        """
+        self.__get_incomplete_downloads();
+
+    def __get_incomplete_downloads(self):
+        client = chromadb.PersistentClient(path=os.getenv("db_path"))
+        embedder = embedding_functions.SentenceTransformerEmbeddingFunction(
+            model_name=os.getenv("embedding_model")
+        )
+
+        vector_collection = client.get_collection(
+            name=os.getenv("feed_collection_name"),
+            embedding_function=embedder,
+        )
+
+        results = vector_collection.get(
+            where={"downloadcomplete": "false"}
+        )
+        if not results["ids"]:
+            print("No pending downloads")
+            return
+
+
+        metadatas = results["metadatas"]
+        web_operator = WebOperator()
+        for meta in metadatas:
+            link = meta.get("link")
+            result=web_operator.get_webpage_text(link)
+            print(result)
+
+

@@ -19,7 +19,9 @@ def main():
 
         if arg.startswith('-f'):
             feed_url=arg[2:]
+
     validate_input()
+    chroma_operator = ChromaOperator()
 
     match(operation_type):
         case 'add':
@@ -29,23 +31,21 @@ def main():
                 print("No feed details found")
                 sys.exit(1)
 
-            chroma_operator=ChromaOperator()
+
             chroma_operator.save_rss_details(feed_details)
+        case 'download':
+            chroma_operator.complete_downloads()
 
         case _:
             print("Unkown operation")
-    # feed_operator=FeedOperator()
-    # feed_details= feed_operator.get_feed_details(feed_url)
-    # if len(feed_details)==0:
-    #     print("No feed details found")
-    #     sys.exit(1)
+
 
 
 def validate_input():
      """"
      validates the inputs
      """
-     if not operation_type or operation_type not in ['add']:
+     if not operation_type or operation_type not in ['add','download']:
          print("Operation type is not valid")
          sys.exit(1)
 
