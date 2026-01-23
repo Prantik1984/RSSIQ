@@ -82,16 +82,56 @@ class ChromaOperator:
         results = vector_collection.get(
             where={"downloadcomplete": "false"}
         )
-        if not results["ids"]:
+
+        ids = results["ids"]
+        metadatas = results["metadatas"]
+
+        if not ids:
             print("No pending downloads")
             return
 
-
-        metadatas = results["metadatas"]
         web_operator = WebOperator()
-        for meta in metadatas:
+        for doc_id,meta in zip(ids, metadatas):
             link = meta.get("link")
             result=web_operator.get_webpage_text(link)
-            print(result)
+            if result['result']:
+                full_article_stored= self.__store_complete_article(result['content'],link)
+                if full_article_stored==True:
+                    print("updated")
+                # meta["downloadcomplete"] = "true"
+
+
+    def __store_complete_article(self,article_text:str,link:str)->bool:
+        """"
+        saves the complete article in
+        a vector db
+        """
+        client = chromadb.PersistentClient(path=os.getenv("full_article_db_path"))
+        embedder = embedding_functions.SentenceTransformerEmbeddingFunction(
+            model_name=os.getenv("embedding_model")
+        )
+
+        vector_collection = client.get_or_create_collection(
+            name=os.getenv("articles_collection_name"),
+            embedding_function=embedder,
+            metadata={"hnsw:space": "cosine"}
+        )
+        try:
+            id=hashlib.sha256(link.encode("utf-8")).hexdigest()
+            metadata = {
+                "link": link
+
+            }
+            ids=[id]
+            docs=[article_text]
+            metas=[metadata]
+
+            vector_collection.add(ids=ids, documents=docs, metadatas=metas)
+            return True
+
+        except Exception as e:
+            print(f"Error in adding rss feed to db :-{e}")
+            return False
+
 
 
