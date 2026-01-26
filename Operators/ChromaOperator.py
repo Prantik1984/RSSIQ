@@ -68,6 +68,12 @@ class ChromaOperator:
         """
         self.__get_incomplete_downloads();
 
+    def search_collection(self,search_term:str):
+        """"
+        Searching the vector collection
+        """
+        print(f"searching for {search_term}")
+
     def __get_incomplete_downloads(self):
         client = chromadb.PersistentClient(path=os.getenv("db_path"))
         embedder = embedding_functions.SentenceTransformerEmbeddingFunction(

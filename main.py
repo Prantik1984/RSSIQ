@@ -5,13 +5,13 @@ from Operators.ChromaOperator import ChromaOperator
 """"
 declaring variables
 """
-operation_type=feed_url=None
+operation_type=feed_url=user_query=None
 
 def main():
     """"
     Main function
     """
-    global operation_type, feed_url
+    global operation_type, feed_url,user_query
 
     for arg in sys.argv:
         if arg.startswith('-o'):
@@ -19,6 +19,9 @@ def main():
 
         if arg.startswith('-f'):
             feed_url=arg[2:]
+
+        if arg.startswith('-q'):
+            user_query=arg[2:]
 
     validate_input()
     chroma_operator = ChromaOperator()
@@ -36,6 +39,9 @@ def main():
         case 'download':
             chroma_operator.complete_downloads()
 
+        case 'query':
+            chroma_operator.search_collection(user_query)
+
         case _:
             print("Unkown operation")
 
@@ -45,7 +51,7 @@ def validate_input():
      """"
      validates the inputs
      """
-     if not operation_type or operation_type not in ['add','download']:
+     if not operation_type or operation_type not in ['add','download','query']:
          print("Operation type is not valid")
          sys.exit(1)
 
