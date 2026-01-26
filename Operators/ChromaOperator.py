@@ -82,14 +82,14 @@ class ChromaOperator:
         results = vector_collection.get(
             where={"downloadcomplete": "false"}
         )
-
         ids = results["ids"]
         metadatas = results["metadatas"]
 
         if not ids:
             print("No pending downloads")
             return
-
+        ids_to_update = []
+        metas_to_update = []
         web_operator = WebOperator()
         for doc_id,meta in zip(ids, metadatas):
             link = meta.get("link")
@@ -97,8 +97,16 @@ class ChromaOperator:
             if result['result']:
                 full_article_stored= self.__store_complete_article(result['content'],link)
                 if full_article_stored==True:
-                    print("updated")
-                # meta["downloadcomplete"] = "true"
+                    new_meta = dict(meta or {})
+                    new_meta["downloadcomplete"] = "true"
+                    ids_to_update.append(doc_id)
+                    metas_to_update.append(new_meta)
+
+        if ids_to_update:
+            vector_collection.update(
+                ids=ids_to_update,
+                metadatas=metas_to_update
+            )
 
 
     def __store_complete_article(self,article_text:str,link:str)->bool:
