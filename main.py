@@ -40,7 +40,7 @@ def main():
             chroma_operator.complete_downloads()
 
         case 'query':
-            chroma_operator.search_collection(user_query)
+            chroma_operator.search_db(user_query)
 
         case _:
             print("Unkown operation")
